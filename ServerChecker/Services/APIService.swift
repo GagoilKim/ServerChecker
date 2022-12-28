@@ -18,7 +18,7 @@ class APIService: APIServiceProtocol {
         return URLSession.shared.dataTaskPublisher(for: url)
             .tryMap { (data, response) in
                 if let response = response as? HTTPURLResponse {
-                    if response.statusCode == 200 {
+                    if 200...299 ~= response.statusCode {
                         return true
                     } else {
                         return false

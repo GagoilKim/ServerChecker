@@ -7,41 +7,6 @@
 
 import SwiftUI
 import Combine
-import UserNotifications
-
-enum ServerStatus : Codable {
-    case connected
-    case disconnected
-    case standBy
-    
-    var color: Color {
-        switch self {
-        case .connected:
-            return .green
-        case .disconnected:
-            return .red
-        case .standBy:
-            return .black
-        }
-    }
-}
-
-class Server :  Identifiable, Codable {
-    var name : String
-    var server : String
-    var status : ServerStatus
-    
-    init(name: String, server : String, status : ServerStatus) {
-        self.name = name
-        self.server  = server
-        self.status = status
-    }
-}
-
-struct ServerData  {
-    var servers : [Server]
-}
-
 
 enum AutoUpdateState {
     case on
@@ -84,20 +49,9 @@ struct HomeView: View {
     @State private var hideModifyView : Bool = true
     
     @State private var autoUpdateState : AutoUpdateState = .on
-    @State private var timerCount : String = "5"
+//    @State private var timerCount : String = "5"
     @StateObject var viewModel = ViewModel()
-    
     @State var timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
-    
-    init() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
-            if success {
-                print("NOTIFICATION SET")
-            } else {
-                print("NOTIFICATION FAILED")
-            }
-        }
-    }
     
     var body: some View {
         ZStack{
@@ -174,16 +128,16 @@ struct HomeView: View {
                                 .padding(.trailing, 100)
                             Spacer()
                         }
-                        ForEach(self.viewModel.serverObject.servers.indices, id: \.self) { index in
+                        ForEach(self.viewModel.servers.indices, id: \.self) { index in
                             HStack{
                                 Circle()
                                     .frame(width: 15, height: 15, alignment: .center)
-                                    .foregroundColor(self.viewModel.serverObject.servers[index].status.color)
+                                    .foregroundColor(self.viewModel.servers[index].status.color)
                                     .padding(.leading, 20)
-                                Text(self.viewModel.serverObject.servers[index].name)
+                                Text(self.viewModel.servers[index].name)
                                     .padding(.leading, 10)
                                 Spacer()
-                                Text(self.viewModel.serverObject.servers[index].server)
+                                Text(self.viewModel.servers[index].server)
                                 Spacer()
                                 Button(action: {
                                     //                                self.viewModel.serverObject.servers.remove(at: index)
@@ -195,7 +149,7 @@ struct HomeView: View {
                                 }
                                 .padding(.trailing, 10)
                                 Button(action: {
-                                    self.viewModel.serverObject.servers.remove(at: index)
+                                    self.viewModel.servers.remove(at: index)
                                     self.viewModel.setServers()
                                 }){
                                     Text("Remove")
@@ -203,11 +157,11 @@ struct HomeView: View {
                                 }
                                 .padding(.trailing, 10)
                             }
-                            .onChange(of: self.viewModel.serverObject.servers[index].status, perform: { newValue in
+                            .onChange(of: self.viewModel.servers[index].status, perform: { newValue in
                                 switch self.autoUpdateState {
                                 case .on:
                                     if newValue == .disconnected {
-                                        self.notifyDisconnect()
+                                        self.viewModel.notifyDisconnect()
                                     }
                                 case .off:
                                     break
@@ -270,19 +224,9 @@ struct HomeView: View {
         timer.upstream.connect().cancel()
         self.showStopAlert = true
         self.autoUpdateState  = .off
-        for server in self.viewModel.serverObject.servers {
+        for var server in self.viewModel.servers {
             server.status = .standBy
         }
-    }
-    
-    private func notifyDisconnect() {
-        let content = UNMutableNotificationContent()
-        content.title = "Server Disconnected"
-        content.subtitle = "Check it out!!"
-        content.sound = UNNotificationSound.default
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false)
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
     }
 }
 
@@ -294,30 +238,36 @@ struct HomeView_Previews: PreviewProvider {
 
 extension HomeView {
     final class ViewModel: ObservableObject {
-        @Published var serverObject : ServerData = ServerData(servers: [])
+        @Published var servers: [Server] = []
         @Published var timerCount : String = "5"
         @Published var selectedIndex : Int = 0
         @Published var selectedName : String = ""
         @Published var selectedURL : String = ""
         
         let apiSevice: APIServiceProtocol
+        let notifyService: NotifyServiceProtocol
         var bag = Set<AnyCancellable>()
         let timerIntervalTextPublisher = PassthroughSubject<String, Never>()
         
-        init(apiService: APIServiceProtocol = APIService()) {
+        init(apiService: APIServiceProtocol = APIService(), notifyService: NotifyServiceProtocol = NotifyService()) {
             self.apiSevice = apiService
+            self.notifyService = notifyService
             self.getServers()
             self.getTimeInterval()
         }
         
+        func notifyDisconnect() {
+            self.notifyService.notifyDisconnect()
+        }
+        
         func addServer(nameText: String, serverText: String) {
             let server = Server(name: nameText, server: serverText, status: .standBy)
-            self.serverObject.servers.append(server)
+            self.servers.append(server)
             self.setServers()
         }
         
         func updateServer() {
-            for server in self.serverObject.servers {
+            for var server in self.servers {
                 self.apiSevice.updateServer(server: server)
                     .sink(receiveValue: { result in
                         DispatchQueue.main.async {
@@ -329,14 +279,14 @@ extension HomeView {
                         }
                     })
                     .store(in: &bag)
-                self.serverObject.servers.append(Server(name: "", server: "", status: .standBy))
-                self.serverObject.servers.removeLast()
+                self.servers.append(Server(name: "", server: "", status: .standBy))
+                self.servers.removeLast()
                 self.setServers()
             }
         }
         
         func setServers() {
-            if let encoded = try? JSONEncoder().encode(self.serverObject.servers) {
+            if let encoded = try? JSONEncoder().encode(self.servers) {
                 UserDefaults.standard.set(encoded, forKey: "Servers")
             }
         }
@@ -344,7 +294,7 @@ extension HomeView {
         func getServers() {
             if let data = UserDefaults.standard.data(forKey: "Servers") {
                 if let decoded = try? JSONDecoder().decode([Server].self, from: data) {
-                    self.serverObject.servers = decoded
+                    self.servers = decoded
                     return
                 }
             }
@@ -363,13 +313,13 @@ extension HomeView {
         
         func modifyServer(index: Int) {
             self.selectedIndex = index
-            self.selectedName = self.serverObject.servers[index].name
-            self.selectedURL = self.serverObject.servers[index].server
+            self.selectedName = self.servers[index].name
+            self.selectedURL = self.servers[index].server
         }
         
         func confirmModify() {
-            self.serverObject.servers[self.selectedIndex].name = self.selectedName
-            self.serverObject.servers[self.selectedIndex].server = self.selectedURL
+            self.servers[self.selectedIndex].name = self.selectedName
+            self.servers[self.selectedIndex].server = self.selectedURL
             self.setServers()
         }
         
