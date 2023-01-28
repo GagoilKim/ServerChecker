@@ -20,6 +20,7 @@
 		94663562295C181A0066F547 /* Server.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94663561295C181A0066F547 /* Server.swift */; };
 		94663565295C1A460066F547 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94663564295C1A460066F547 /* APIService.swift */; };
 		94663567295C20B90066F547 /* NotifyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94663566295C20B90066F547 /* NotifyService.swift */; };
+		948EDEB32984CEEC007AE230 /* AutoUpdateState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 948EDEB22984CEEC007AE230 /* AutoUpdateState.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 		94663561295C181A0066F547 /* Server.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Server.swift; sourceTree = "<group>"; };
 		94663564295C1A460066F547 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
 		94663566295C20B90066F547 /* NotifyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyService.swift; sourceTree = "<group>"; };
+		948EDEB22984CEEC007AE230 /* AutoUpdateState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoUpdateState.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -158,6 +160,7 @@
 			isa = PBXGroup;
 			children = (
 				94663561295C181A0066F547 /* Server.swift */,
+				948EDEB22984CEEC007AE230 /* AutoUpdateState.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -303,6 +306,7 @@
 			files = (
 				9466355A295C166F0066F547 /* HomeView.swift in Sources */,
 				94663565295C1A460066F547 /* APIService.swift in Sources */,
+				948EDEB32984CEEC007AE230 /* AutoUpdateState.swift in Sources */,
 				94663531295C16580066F547 /* ContentView.swift in Sources */,
 				9466355D295C16B60066F547 /* View+Extension.swift in Sources */,
 				9466355F295C16D40066F547 /* String+Extension.swift in Sources */,

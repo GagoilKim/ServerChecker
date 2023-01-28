@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 protocol APIServiceProtocol {
-    func updateServer(server: Server) -> AnyPublisher<Bool, Never> 
+    func updateServer(server: Server) -> AnyPublisher<Bool, Never>
 }
 
 class APIService: APIServiceProtocol {

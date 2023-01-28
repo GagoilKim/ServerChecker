@@ -8,58 +8,23 @@
 import SwiftUI
 import Combine
 
-enum AutoUpdateState {
-    case on
-    case off
-    
-    var imageName: String {
-        switch self {
-        case .on:
-            return "stop.fill"
-        case .off:
-            return "play.fill"
-        }
-    }
-    
-    var imageColor : Color {
-        switch self {
-        case .on:
-            return .red
-        case .off:
-            return .green
-        }
-    }
-    
-    mutating func switchState() {
-        switch self {
-        case .on:
-            self = .off
-        case .off:
-            self = .on
-        }
-    }
-}
-
 struct HomeView: View {
     @State private var nameText : String = ""
     @State private var serverText : String = ""
     @State private var showAlert : Bool = false
     @State private var showStopAlert : Bool = false
-    
     @State private var hideModifyView : Bool = true
-    
     @State private var autoUpdateState : AutoUpdateState = .on
-//    @State private var timerCount : String = "5"
     @StateObject var viewModel = ViewModel()
     @State var timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     
     var body: some View {
         ZStack{
-            VStack{
+            VStack(spacing: 10){
                 Text("Server Checker")
                     .font(.title)
                     .padding(.top, 20)
-                HStack{
+                HStack(spacing: 10){
                     Spacer()
                     Text("TimerInterval: ")
                     TextField("Default 5sec", text: self.$viewModel.timerCount)
@@ -95,7 +60,7 @@ struct HomeView: View {
                         self.showStopAlert = false
                     }
                 }
-                HStack{
+                HStack(spacing: 10){
                     TextField("Type Name", text: $nameText)
                         .frame(height: 40, alignment: .center)
                     TextField("Type Server(URL)", text: $serverText)
@@ -117,7 +82,7 @@ struct HomeView: View {
                         break
                     }
                 }
-                VStack{
+                VStack(spacing: 10){
                     List{
                         HStack(alignment: .center, spacing: 0){
                             Text("Status")
@@ -176,7 +141,7 @@ struct HomeView: View {
             ZStack{
                 RoundedRectangle(cornerRadius: 20)
                     .frame(width: 400, height: 400, alignment: .center)
-                VStack{
+                VStack(spacing: 10){
                     Text("MODIFY")
                         .foregroundColor(.white)
                     TextField("Type Name", text: self.$viewModel.selectedName)
